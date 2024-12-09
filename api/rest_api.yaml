@@ -1,0 +1,757 @@
+openapi: 3.0.0
+info:
+  title: Social Network API
+  version: 1.0.0
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    dto.Response:
+      type: object
+      properties:
+        message:
+          type: string
+    dto.User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int32
+        avatar_png:
+          type: string
+          format: byte
+    dto.Emoji:
+      type: object
+      properties:
+        emoji_id:
+          type: integer
+          format: int32
+        emoji:
+          type: string
+          format: byte
+        users:
+          items:
+            $ref: '#/components/schemas/dto.User'
+          type: array
+    dto.Place:
+      properties:
+        x:
+          type: integer
+          format: int32
+        y:
+          type: integer
+          format: int32
+      type: object
+    dto.PostCreate:
+      type: object
+      properties:
+        place:
+          $ref: '#/components/schemas/dto.Place'
+        title:
+          type: string
+        images:
+          type: array
+          items:
+            properties:
+              image:
+                type: string
+                format: byte
+        text:
+          type: string
+    dto.Comment:
+      type: object
+      properties:
+        comment_id:
+          type: integer
+          format: int64
+        comment:
+          type: string
+        emojies:
+          type: array
+          items:
+            $ref: '#/components/schemas/dto.Emoji'
+    dto.Post:
+      type: object
+      properties:
+        post_id:
+          type: integer
+          format: int32
+        place:
+          $ref: '#/components/schemas/dto.Place'
+        title:
+          type: string
+        images:
+          type: array
+          items:
+            properties:
+              image:
+                type: string
+                format: byte
+        text:
+          type: string
+        emojies:
+          type: array
+          items:
+            $ref: '#/components/schemas/dto.Emoji'
+    dto.SignInInput:
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+      required:
+      - login
+      - password
+      type: object
+    dto.TokenResponse:
+      properties:
+        accessToken:
+          type: string
+      type: object
+paths:
+  /users/{user_id}/post:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Create post
+      tags:
+      - Posts & Places
+      description: Запрос создания поста у пользователя с идентификатором {user_id}
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор пользователя
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.PostCreate'
+      responses:
+        "200":
+          description: Объект поста
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Post'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+  /users/{user_id}/posts:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get posts
+      tags:
+      - Posts & Places
+      description: Получение ленты постов
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор пользователя
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Кол-во постов на странице
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Номер страницы (начинается с 0)
+      responses:
+        "200":
+          description: Объекты постов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/dto.Post'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+  /users/{user_id}/posts/{post_id}/emoji:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Create emoji of post
+      tags:
+      - Posts & Places
+      description: Запрос установки реакции у поста
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор пользователя
+        - in: path
+          name: post_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор поста
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emoji_id::
+                  type: integer
+                  format: int32
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+  /places/rating:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get a rating of places
+      tags:
+      - Posts & Places
+      description: Получение списка популярных мест (по убыванию)
+      parameters:
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Кол-во постов на странице
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Номер страницы (начинается с 0)
+      responses:
+        "200":
+          description: Объекты популярных мест
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    place_id:
+                      type: integer
+                      format: int64
+                    title:
+                      type: string
+                    image:
+                      type: string
+                      format: byte
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+  /places/{place_id}/posts:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get posts by place
+      tags:
+      - Posts & Places
+      description: Получение списка постов по идентификатору места
+      parameters:
+        - in: path
+          name: place_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор места
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Кол-во постов на странице
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Номер страницы (начинается с 0)
+      responses:
+        "200":
+          description: Объекты постов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/dto.Post'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+  /users/{user_id}/posts/{post_id}/comment:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Create comment
+      tags:
+      - Comment
+      description: Запрос создания комментрария у выбранного поста текущим пользователем
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор пользователя
+        - in: path
+          name: post_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор поста
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                  format: byte
+      responses:
+        "200":
+          description: Объект комментария
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Comment'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+  /users/{user_id}/posts/{post_id}/comments:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get comments
+      tags:
+      - Comment
+      description: Запрос выдачи списка комментариев по выбранному посту
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор пользователя
+        - in: path
+          name: post_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор поста
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Кол-во постов на странице
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Номер страницы (начинается с 0)
+      responses:
+        "200":
+          description: Объекты комментариев
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/dto.Comment'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+  /users/{user_id}/posts/{post_id}/comments/{comment_id}/emoji:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Create emoji of comment
+      tags:
+      - Comment
+      description: Запрос установки реакции у поста
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор пользователя
+        - in: path
+          name: post_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор поста
+        - in: path
+          name: comment_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: Идентификатор комментария
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emoji_id::
+                  type: integer
+                  format: int32
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+  /users/{user_id}/subscribe:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Create post
+      tags:
+      - Subscribe
+      description: Подписаться на пользователя
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+          description: Идентификатор пользователя
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id::
+                  type: integer
+                  format: int64
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+  /users/sign-in:
+    post:
+      summary: SignIn
+      tags:
+      - Session
+      description: Запрос авторизации пользователя
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.SignInInput'
+      responses:
+        "200":
+          description: JWT Токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.TokenResponse'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.Response'
