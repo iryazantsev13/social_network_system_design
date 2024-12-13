@@ -562,13 +562,6 @@ paths:
       description: Запрос установки реакции у поста
       parameters:
         - in: path
-          name: post_id
-          schema:
-            type: integer
-            format: int64
-          required: true
-          description: Идентификатор поста
-        - in: path
           name: comment_id
           schema:
             type: integer
