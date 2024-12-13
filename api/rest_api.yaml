@@ -112,22 +112,14 @@ components:
           type: string
       type: object
 paths:
-  /users/{user_id}/post:
+  /posts:
     post:
       security:
         - bearerAuth: []
       summary: Create post
       tags:
       - Posts & Places
-      description: Запрос создания поста у пользователя с идентификатором {user_id}
-      parameters:
-        - in: path
-          name: user_id
-          schema:
-            type: integer
-            format: int64
-          required: true
-          description: Идентификатор пользователя
+      description: Запрос создания поста
       requestBody:
         content:
           application/json:
@@ -170,7 +162,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dto.Response'
-  /users/{user_id}/posts:
     get:
       security:
         - bearerAuth: []
@@ -239,22 +230,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dto.Response'
-  /users/{user_id}/posts/{post_id}/emoji:
+  /posts/{post_id}/emojies:
     post:
       security:
         - bearerAuth: []
-      summary: Create emoji of post
+      summary: Set reaction
       tags:
       - Posts & Places
       description: Запрос установки реакции у поста
       parameters:
-        - in: path
-          name: user_id
-          schema:
-            type: integer
-            format: int64
-          required: true
-          description: Идентификатор пользователя
         - in: path
           name: post_id
           schema:
@@ -304,7 +288,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dto.Response'
-  /places/rating:
+  /places/rates:
     get:
       security:
         - bearerAuth: []
@@ -438,7 +422,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dto.Response'
-  /users/{user_id}/posts/{post_id}/comment:
+  /posts/{post_id}/comments:
     post:
       security:
         - bearerAuth: []
@@ -447,13 +431,6 @@ paths:
       - Comment
       description: Запрос создания комментрария у выбранного поста текущим пользователем
       parameters:
-        - in: path
-          name: user_id
-          schema:
-            type: integer
-            format: int64
-          required: true
-          description: Идентификатор пользователя
         - in: path
           name: post_id
           schema:
@@ -507,7 +484,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dto.Response'
-  /users/{user_id}/posts/{post_id}/comments:
     get:
       security:
         - bearerAuth: []
@@ -516,13 +492,6 @@ paths:
       - Comment
       description: Запрос выдачи списка комментариев по выбранному посту
       parameters:
-        - in: path
-          name: user_id
-          schema:
-            type: integer
-            format: int64
-          required: true
-          description: Идентификатор пользователя
         - in: path
           name: post_id
           schema:
@@ -583,7 +552,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dto.Response'
-  /users/{user_id}/posts/{post_id}/comments/{comment_id}/emoji:
+  /comments/{comment_id}/emojies:
     post:
       security:
         - bearerAuth: []
@@ -592,13 +561,6 @@ paths:
       - Comment
       description: Запрос установки реакции у поста
       parameters:
-        - in: path
-          name: user_id
-          schema:
-            type: integer
-            format: int64
-          required: true
-          description: Идентификатор пользователя
         - in: path
           name: post_id
           schema:
@@ -655,22 +617,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dto.Response'
-  /users/{user_id}/subscribe:
+  /subscribers:
     post:
       security:
         - bearerAuth: []
-      summary: Create post
+      summary: Subscribe to user
       tags:
       - Subscribe
       description: Подписаться на пользователя
-      parameters:
-        - in: path
-          name: user_id
-          schema:
-            type: integer
-            format: int64
-          required: true
-          description: Идентификатор пользователя
       requestBody:
         content:
           application/json:
@@ -713,7 +667,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dto.Response'
-  /users/sign-in:
+  /sign-in:
     post:
       summary: SignIn
       tags:
