@@ -1,4 +1,4 @@
-# System design социальный сети для курса по system design
+# System design социальный сети
 
 ## Функциональные требования
 
